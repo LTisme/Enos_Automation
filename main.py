@@ -146,7 +146,8 @@ for each_station in data:
         elem_configuration = browser.find_element_by_css_selector("a[href*='%s']" % siteID).click()  # 选到特定的配置按钮
         sleep(5)    # 等待5s以出结果
     else:   # 否则不是第一次打开，那就需要重新打开这个页面
-        browser.get(EDGE_URL)
+        browser.switch_to.window(browser.window_handles[0])  # 首先切换回Edge接入窗口
+        browser.refresh()   # 刷新页面，get()方法之所以无效是因为网址没有变动
         sleep(140)
 
         iframe = browser.find_elements_by_tag_name("iframe")[0]  # 选到了iframe下
@@ -166,6 +167,7 @@ for each_station in data:
     TEMP_PORT_NUM = ""  # 暂存最新的端口号
     count = 1
     for each_device in each_station['信息']:  # 初步的打算是每做一个盒子就点击下面的连接添加设备
+        """这个for循环用来往Edge接入里填信息"""
         PORT_NUM = each_device['port_num']  # 获得了端口号
         DEVICE_NAME = each_device['device_name']    # 获得了设备名
         if count == 1:
@@ -203,11 +205,15 @@ for each_station in data:
                 "// *[ @ id = 'container'] / div / div[1] / div[2] / "
                 "div / div[2] / div[1] / div / div / div[3] / div / button[2]").click()  # 点击提交
 
-            sleep(2)    #
+            sleep(2)    # 提交之后阻塞2秒以等待
             # 在新建的盒子下新建104转发x的连接，并在新建的连接中添加设备
             boxes = browser.find_elements_by_css_selector("a[id*='tab']")
             for box in boxes:
-                if box.text == BOX_NAME:    # 找到新建的对应的盒子，并选中该盒子
+                try:    # 防止盒子取不到text属性而报错
+                    BOX_TEXT = box.text
+                except:
+                    continue
+                if BOX_TEXT == BOX_NAME:    # 找到新建的对应的盒子，并选中该盒子
                     sleep(3)
                     box.click()
                     # box.find_element_by_xpath("parent::*").click()     # 选中对应的盒子，不能直接box.click()
@@ -227,6 +233,7 @@ for each_station in data:
                         "option[value='4169']").click()  # 统一先选 创力800/5的模板
                     device_submit = browser.find_element_by_xpath(
                         "//*[@id='container']/div/div[1]/div[2]/div/div[3]/div/div[2]/a[2]").click()  # 点击保存
+                    sleep(3)    # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
                     # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
         else:
             """盒子存在，则不用建盒子了"""
@@ -253,6 +260,7 @@ for each_station in data:
                             "option[value='4169']").click()  # 统一先选 创力800/5的模板
                         device_submit = browser.find_element_by_xpath(
                             "//*[@id='container']/div/div[1]/div[2]/div/div[3]/div/div[2]/a[2]").click()  # 点击保存
+                        sleep(3)  # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
                         # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
                     else:   # 若一致————在对应盒子下的对应TEMP_LINK连接下添加设备
                         LINK_NAME = functions.which_link(PORT_NUM, port_list)
@@ -279,6 +287,7 @@ for each_station in data:
                         device_submit = browser.find_element_by_xpath(
                             "//*[@id='container']/div/div[1]/div[2]/div/div[3]/div/div[2]/a[2]")
                         device_submit.click()  # 点击保存
+                        sleep(3)  # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
                         # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
 
         if TEMP_PORT_NUM != PORT_NUM:   # 在for循环最后再判断两者是否相等

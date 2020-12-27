@@ -95,8 +95,11 @@ def add_unique_device_in_link(browser, device_name):
 
 
 def establish_link(browser, LINK_NAME, IP, PORT_NUM):
-    """用于新建连接"""
-    link_add = browser.find_elements_by_css_selector("a[class='eos-link']")[1].click()  # 点击添加连接的链接
+    """用于新建连接，需要点击的是对应盒子下的添加连接按钮，否则会失败"""
+    # link_add = browser.find_elements_by_css_selector("a[class='eos-link']")[1].click()  # 点击添加连接的链接——这个不对
+    current_bar = browser.find_element_by_css_selector("div[class='tab-pane fade active in']")  # 找到对应盒子下的布局
+    current_bar.find_element_by_xpath("child::*/child::div[2]/child::a").click()    # 这才能点击到对应的添加连接按钮
+    # div[style='height: 40px; line-height: 40px;']————用这个获取到bar，然后往下倒到a儿子试试
     link_name = browser.find_element_by_css_selector("input[id='collectName']").send_keys(
         LINK_NAME)  # 连接的名字都叫104转发x，后期再对x做多端口处理
     link_mode = browser.find_element_by_css_selector(
