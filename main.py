@@ -47,6 +47,7 @@ for each_station in data:
         browser.get(REAL_URL)   # 打开新的站点独有的DASHBOARD仪表盘网址
         sleep(2)  # 以等待不要跳转的太快
     for each_device in each_station['信息']:
+        """这个for循环单纯用来往场站信息里添加设备"""
         KitName = each_device['device_name']
         Capacity = each_device['capacity']
         RatedCurrent = each_device['rated_current']
@@ -131,10 +132,9 @@ for each_station in data:
                 # 那么尝试次数用完了，就得跳过这个设备了
                 # 需要用log日志记录一下是哪个设备这么离谱
                 continue
-
     submit_after_addition = browser.find_elements_by_xpath("//a[contains(text(),'保存')]")[0].click()  # 最后提交以更新场站信息
 
-    if FIRST_OPEN_TAG == 1:     # 若是第一次回到Edge接入页面
+    if FIRST_OPEN_TAG == 1:     # 若是第一次回到Edge接入页面，则直接切回页面就好
         browser.switch_to.window(browser.window_handles[0])  # 切换回Edge接入窗口
         iframe = browser.find_elements_by_tag_name("iframe")[0]  # 选到了iframe下
         browser.switch_to.frame(iframe)
@@ -145,7 +145,7 @@ for each_station in data:
         sleep(10)  # 等待10s以出结果
         elem_configuration = browser.find_element_by_css_selector("a[href*='%s']" % siteID).click()  # 选到特定的配置按钮
         sleep(5)    # 等待5s以出结果
-    else:   # 否则不是第一次打开
+    else:   # 否则不是第一次打开，那就需要重新打开这个页面
         browser.get(EDGE_URL)
         sleep(140)
 
@@ -216,21 +216,9 @@ for each_station in data:
                     functions.establish_link(browser, LINK_NAME, IP, PORT_NUM)  # 建立新连接
                     sleep(1)
 
-                    # 开始在新建的连接下，添加设备并选一个初始模板
-                    """首先得找到添加设备这个链接，然后往前偏移找出<span></span>用其中的内容来判断是否该点这个链接"""
-                    elem_filter = []
-                    device_add = browser.find_elements_by_css_selector("a[class='eos-link']")
-                    for elem in device_add:
-                        """这样找到了对应连接下的-添加设备-按钮"""
-                        try:
-                            if elem.find_element_by_xpath(
-                                    "parent::*/preceding-sibling::div[1]/span[2]").text == LINK_NAME:  # 找到了对应连接
-                                elem_filter.append(elem)
-                        except:  # 忽略找不到对象的元素
-                            pass
-                    # 对应的连接一定是第一个的，所以可以只选中列表的第一个元素
-                    elem_filter[0].click()  # 之所以弄成这样，是为了避免浏览器被设置成英语就找不到元素的情况
-
+                    # 在新建的连接下，点击添加设备——这个按钮
+                    link = functions.find_link(browser, LINK_NAME)
+                    link[0].click()
                     sleep(1)
                     functions.add_unique_device_in_link(browser, DEVICE_NAME)     # 勾选中相应的设备
                     # 然后统一设定一个变比模板，后面再来修改
@@ -254,21 +242,9 @@ for each_station in data:
                         functions.establish_link(browser, LINK_NAME, IP, PORT_NUM)  # 建立新连接
                         sleep(1)
 
-                        # 开始在新建的连接下，添加设备并选一个初始模板
-                        """首先得找到添加设备这个链接，然后往前偏移找出<span></span>用其中的内容来判断是否该点这个链接"""
-                        elem_filter = []
-                        devide_add = browser.find_elements_by_css_selector("a[class='eos-link']")
-                        for elem in devide_add:
-                            """这样找到了对应连接下的-添加设备-按钮"""
-                            try:
-                                if elem.find_element_by_xpath(
-                                        "parent::*/preceding-sibling::div[1]/span[2]").text == LINK_NAME:  # 找到了对应连接
-                                    elem_filter.append(elem)
-                            except:  # 忽略找不到对象的元素
-                                pass
-                        # 对应的连接是唯一的，所以可以只选中列表的第一个元素
-                        elem_filter[0].click()  # 之所以弄成这样，是为了避免浏览器被设置成英语就找不到元素的情况
-
+                        # 在新建的连接下，点击添加设备——这个按钮
+                        link = functions.find_link(browser, LINK_NAME)
+                        link[0].click()
                         sleep(1)
                         functions.add_unique_device_in_link(browser, DEVICE_NAME)
                         # 然后统一设定一个变比模板，后面再来修改
@@ -280,40 +256,19 @@ for each_station in data:
                         # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
                     else:   # 若一致————在对应盒子下的对应TEMP_LINK连接下添加设备
                         LINK_NAME = functions.which_link(PORT_NUM, port_list)
-                        # 开始在已有的连接下，添加设备并选一个初始模板
-                        """首先得找到添加设备这个链接，然后往前偏移找出<span></span>用其中的内容来判断是否该点这个链接"""
-                        elem_filter = []
-                        device_add = browser.find_elements_by_css_selector("a[class='eos-link']")
-                        for elem in device_add:
-                            """这样找到了对应连接下的-添加设备-按钮"""
-                            try:
-                                if elem.find_element_by_xpath(
-                                        "parent::*/preceding-sibling::div[1]/span[2]").text == LINK_NAME:  # 找到了对应连接
-                                    elem_filter.append(elem)
-                            except:  # 忽略找不到对象的元素
-                                pass
+                        # 开始在已有的连接下，选择添加设备按钮
+                        link = functions.find_link(browser, LINK_NAME)
                         # 对应的连接是唯一的，所以可以只选中列表的第一个元素
-                        if len(elem_filter) != 0:   # 找到了对应连接
-                            elem_filter[0].click()  # 之所以弄成这样，是为了避免浏览器被设置成英语就找不到元素的情况
+                        if len(link) != 0:   # 找到了对应连接
+                            link[0].click()  # 之所以弄成这样，是为了避免浏览器被设置成英语就找不到元素的情况
                         else:   # 如果没有找到对应的连接，说明还得要新建这个连接
                             # LINK_NAME 在前面已经取到了
                             functions.establish_link(browser, LINK_NAME, IP, PORT_NUM)  # 建立新连接
                             sleep(1)
 
-                            # 在刚建的连接下，添加唯一的设备
-                            """首先得找到添加设备这个链接，然后往前偏移找出<span></span>用其中的内容来判断是否该点这个链接"""
-                            elem_filter = []
-                            device_add = browser.find_elements_by_css_selector("a[class='eos-link']")
-                            for elem in device_add:
-                                """这样找到了对应连接下的-添加设备-按钮"""
-                                try:
-                                    if elem.find_element_by_xpath(
-                                            "parent::*/preceding-sibling::div[1]/span[2]").text == LINK_NAME:  # 找到了对应连接
-                                        elem_filter.append(elem)
-                                except:  # 忽略找不到对象的元素
-                                    pass
-                            # 对应的连接是唯一的，所以可以只选中列表的第一个元素
-                            elem_filter[0].click()  # 之所以弄成这样，是为了避免浏览器被设置成英语就找不到元素的情况
+                            # 在刚建的连接下，点击添加唯一的设备
+                            link = functions.find_link(browser, LINK_NAME)
+                            link[0].click()
 
                         sleep(1)
                         functions.add_unique_device_in_link(browser, DEVICE_NAME)

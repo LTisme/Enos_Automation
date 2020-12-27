@@ -108,3 +108,19 @@ def establish_link(browser, LINK_NAME, IP, PORT_NUM):
     link_submit = browser.find_element_by_xpath(
         "/html/body/div/div/div[1]/div[2]/div/div[3]/div[1]/div/div/div[3]/div/button[2]"
     ).click()  # 提交连接，用的绝对定位，比较繁琐
+
+
+def find_link(browser, LINK_NAME):
+    """首先得找到添加设备这个链接，然后往前偏移找出<span></span>用其中的内容来判断是否该点这个链接"""
+    elem_filter = []
+    device_add = browser.find_elements_by_css_selector("a[class='eos-link']")
+    for elem in device_add:
+        """这样找到了对应连接下的-添加设备-按钮"""
+        try:
+            if elem.find_element_by_xpath(
+                    "parent::*/preceding-sibling::div[1]/span[2]").text == LINK_NAME:  # 找到了对应连接
+                elem_filter.append(elem)
+        except:  # 忽略找不到对象的元素
+            pass
+    # 对应的连接一定是第一个的，所以可以后续只选中返回的列表中的第一个元素
+    return elem_filter
