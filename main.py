@@ -1,6 +1,6 @@
 #! python3
 # 用来读入json的数据来自动填表
-
+#-*- coding: utf-8 -*-
 import json
 import os
 from selenium import webdriver
@@ -29,7 +29,13 @@ elem_password = browser.find_element_by_css_selector("input[type='password']").s
 elem_button = browser.find_element_by_css_selector("button[class='index_submit_2OPCK']").click()
 sleep(5)
 elem_span = browser.find_element_by_css_selector("span[class='icon-CloseModuleSelection']").click()     # 至此登录完毕，准备就绪
-sleep(130)      # 最近网页打开变慢，所以等的久一点
+while True:
+    try:
+        if browser.find_element_by_css_selector("div[class='modal-mask modal-mask-open']"):
+            continue
+    except Exception as f:
+        print("Message: " + str(f))
+        break
 
 FIRST_OPEN_TAG = 1
 for each_station in data:
@@ -141,24 +147,68 @@ for each_station in data:
 
         FIRST_OPEN_TAG = 0
         elem_inputbox = browser.find_element_by_css_selector("input[type='text']").send_keys(STATION)  # 往Edge的搜索框里输入要搜索的场站名
-        elem_loupe = browser.find_element_by_css_selector("span[class='ic_basic-input-search-icon']").click()  # 点击右侧的搜索放大镜
-        sleep(10)  # 等待10s以出结果
+        # elem_loupe = browser.find_element_by_css_selector("span[class='ic_basic-input-search-icon']").click()  # 点击右侧的搜索放大镜
+        while True:
+            try:
+                if browser.find_element_by_css_selector("div[class='modal-mask modal-mask-open']"):
+                    continue
+            except Exception as f:
+                print("Message: " + str(f))
+                break
+        WebDriverWait(browser, timeout=5).until(ec.element_to_be_clickable((
+            By.CSS_SELECTOR, "span[class='ic_basic-input-search-icon']"))).click()  # 点击右侧的搜索放大镜，其实不用点放大镜也可以的
+        while True:
+            try:
+                if browser.find_element_by_css_selector("div[class='modal-mask modal-mask-open']"):
+                    continue
+            except Exception as f:
+                print("Message: " + str(f))
+                break
         elem_configuration = browser.find_element_by_css_selector("a[href*='%s']" % siteID).click()  # 选到特定的配置按钮
         sleep(5)    # 等待5s以出结果
     else:   # 否则不是第一次打开，那就需要重新打开这个页面
         browser.switch_to.window(browser.window_handles[0])  # 首先切换回Edge接入窗口
         browser.refresh()   # 刷新页面，get()方法之所以无效是因为网址没有变动
-        sleep(140)
-
+        sleep(10)   # 等待刷新
         iframe = browser.find_elements_by_tag_name("iframe")[0]  # 选到了iframe下
         browser.switch_to.frame(iframe)
+        while True:
+            try:
+                if browser.find_element_by_css_selector("div[class='modal-mask modal-mask-open']"):
+                    continue
+            except Exception as f:
+                print("Message: " + str(f))
+                break
+
         elem_inputbox = browser.find_element_by_css_selector("input[type='text']").send_keys(
             STATION)  # 往Edge的搜索框里输入要搜索的场站名
-        elem_loupe = browser.find_element_by_css_selector(
-            "span[class='ic_basic-input-search-icon']").click()  # 点击右侧的搜索放大镜
-        sleep(10)  # 等待10s以出结果
+        # elem_loupe = browser.find_element_by_css_selector(
+        #     "span[class='ic_basic-input-search-icon']").click()  # 点击右侧的搜索放大镜，其实不用点放大镜也可以的
+        # sleep(140)
+        while True:
+            try:
+                if browser.find_element_by_css_selector("div[class='modal-mask modal-mask-open']"):
+                    continue
+            except Exception as f:
+                print("Message: " + str(f))
+                break
+        WebDriverWait(browser, timeout=20).until(ec.element_to_be_clickable((
+            By.CSS_SELECTOR, "span[class='ic_basic-input-search-icon']"))).click()  # 点击右侧的搜索放大镜，其实不用点放大镜也可以的
+        while True:
+            try:
+                if browser.find_element_by_css_selector("div[class='modal-mask modal-mask-open']"):
+                    continue
+            except Exception as f:
+                print("Message: " + str(f))
+                break
         elem_configuration = browser.find_element_by_css_selector("a[href*='%s']" % siteID).click()  # 选到特定的配置按钮
-        sleep(5)    # 等待结果出现
+        while True:
+            try:
+                if browser.find_element_by_css_selector("div[class='modal-mask modal-mask-open']"):
+                    continue
+            except Exception as f:
+                print("Message: " + str(f))
+                break
 
     box_list = []       # 用来判断盒子是否已经存在
     port_list = []      # 用来判断下一个104转发连接该用104转发几了？——有几个端口号就有几个连接——每往里面填入一个新元素，104转发x的x就要+1
@@ -289,6 +339,7 @@ for each_station in data:
                         device_submit.click()  # 点击保存
                         sleep(3)  # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
                         # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
+
 
         if TEMP_PORT_NUM != PORT_NUM:   # 在for循环最后再判断两者是否相等
             TEMP_PORT_NUM = PORT_NUM
