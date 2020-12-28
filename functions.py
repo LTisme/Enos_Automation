@@ -127,3 +127,15 @@ def find_link(browser, LINK_NAME):
             pass
     # 对应的连接一定是第一个的，所以可以后续只选中返回的列表中的第一个元素
     return elem_filter
+
+
+def wait_loading(browser):
+    """iframe下有个mask页面来显示加载中，需要等它消失，才好点击下一步"""
+    while True:
+        try:
+            if browser.find_element_by_css_selector("div[class='modal-mask modal-mask-open']"):
+                continue
+        except Exception as f:  # 直到页面找不到任何 open 状态的mask，才会跳出循环，否则一直等待
+            print(str(f))
+            break
+
