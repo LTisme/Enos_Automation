@@ -109,7 +109,7 @@ def establish_link(browser, LINK_NAME, IP, PORT_NUM):
     link_port = browser.find_elements_by_css_selector("input[id='port']")[0].send_keys(
         PORT_NUM)  # 发送端口号
     link_submit = browser.find_element_by_xpath(
-        "/html/body/div/div/div[1]/div[2]/div/div[3]/div[1]/div/div/div[3]/div/button[2]"
+        "/html/body/div/div/div[2]/div[2]/div/div[3]/div[1]/div/div/div[3]/div/button[2]"
     ).click()  # 提交连接，用的绝对定位，比较繁琐
 
 

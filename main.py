@@ -11,11 +11,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import functions    # 导入用到的功能函数
 
-# 这仨还是不能缺
-URL = 'https://portal-lywz1.eniot.io/configuration/addstation.html?locale=zh-CN&siteid='    # 联元仪表盘网址
+# 这几个还是不能缺
+DASHBOARD_STATION_URL = 'https://portal-lywz1.eniot.io/configuration/addstation.html?locale=zh-CN&siteid='    # 场站信息仪表盘网址
+DASHBOARD_EDGE_URL = 'https://portal-lywz1.eniot.io/configuration/boxconf.html?locale=zh-CN&siteid='    # Edge接入仪表盘网址
 EDGE_URL = 'https://portal-lywz1.eniot.io/portal/#platform-asset-conf//'    # 联元Edge接入的网址
-ACCOUNT = 'TSKJ'
-PASSWORD = '5PcvJBNj'
+ACCOUNT = 'shujun.wu'   # 具有仪表盘权限的账号密码
+PASSWORD = 'Aspen@123457'
 
 os.chdir(r'F:\python_trainning_pycharm\Automate_the_Routine\Ultimate_Automation\True_Content')
 with open('data.json', encoding='UTF-8') as fbj:
@@ -36,16 +37,17 @@ for each_station in data:
     STATION = each_station['站名']
     siteID = each_station['siteID']
     # 合成每个站点独有的DASHBOARD仪表盘网址————可以快速打开
-    REAL_URL = URL + siteID
+    REAL_STATION_URL = DASHBOARD_STATION_URL + siteID
+    REAL_EDGE_URL = DASHBOARD_EDGE_URL + siteID + '&stnname=' + STATION + '&dstate=1'   # 其实这俩后缀没必要，我试过的
     if len(browser.window_handles) == 1:    # 若是刚开始打开，也就是第一次打开这个网址
-        js = '''window.open('%s')''' % REAL_URL  # selenium中没有专门的打开新窗口的方法，是通过'window.execute_script()'来执行'js'脚本的形式来打开窗口的
+        js = '''window.open('%s')''' % REAL_STATION_URL  # selenium中没有专门的打开新窗口的方法，是通过'window.execute_script()'来执行'js'脚本的形式来打开窗口的
         browser.execute_script(js)
         browser.switch_to.window(browser.window_handles[1])  # 选到场站信息窗口
-        sleep(0.5)  # 以等待不要跳转的太快
+        functions.wait_loading(browser)  # 以等待不要跳转的太快
     else:
         browser.switch_to.window(browser.window_handles[1])  # 选到场站信息窗口
-        browser.get(REAL_URL)   # 打开新的站点独有的DASHBOARD仪表盘网址
-        sleep(2)  # 以等待不要跳转的太快
+        browser.get(REAL_STATION_URL)   # 打开新的站点独有的DASHBOARD仪表盘--场站信息
+        functions.wait_loading(browser)  # 以等待不要跳转的太快
     for each_device in each_station['信息']:
         """这个for循环单纯用来往场站信息里添加设备"""
         KitName = each_device['device_name']
@@ -134,39 +136,9 @@ for each_station in data:
                 continue
     submit_after_addition = browser.find_elements_by_xpath("//a[contains(text(),'保存')]")[0].click()  # 最后提交以更新场站信息
 
-    if FIRST_OPEN_TAG == 1:     # 若是第一次回到Edge接入页面，则直接切回页面就好
-        browser.switch_to.window(browser.window_handles[0])  # 切换回Edge接入窗口
-        iframe = browser.find_elements_by_tag_name("iframe")[0]  # 选到了iframe下
-        browser.switch_to.frame(iframe)
-
-        FIRST_OPEN_TAG = 0
-        elem_inputbox = browser.find_element_by_css_selector("input[type='text']").send_keys(STATION)  # 往Edge的搜索框里输入要搜索的场站名
-        # elem_loupe = browser.find_element_by_css_selector("span[class='ic_basic-input-search-icon']").click()  # 点击右侧的搜索放大镜
-        functions.wait_loading(browser)     # 等待加载
-        WebDriverWait(browser, timeout=5).until(ec.element_to_be_clickable((
-            By.CSS_SELECTOR, "span[class='ic_basic-input-search-icon']"))).click()  # 点击右侧的搜索放大镜，其实不用点放大镜也可以的
-        functions.wait_loading(browser)     # 等待加载
-        elem_configuration = browser.find_element_by_css_selector("a[href*='%s']" % siteID).click()  # 选到特定的配置按钮
-        sleep(5)    # 等待5s以出结果
-    else:   # 否则不是第一次打开，那就需要重新打开这个页面
-        browser.switch_to.window(browser.window_handles[0])  # 首先切换回Edge接入窗口
-        browser.refresh()   # 刷新页面，get()方法之所以无效是因为网址没有变动
-        sleep(10)   # 等待刷新
-        iframe = browser.find_elements_by_tag_name("iframe")[0]  # 选到了iframe下
-        browser.switch_to.frame(iframe)
-        functions.wait_loading(browser)     # 等待加载
-
-        elem_inputbox = browser.find_element_by_css_selector("input[type='text']").send_keys(
-            STATION)  # 往Edge的搜索框里输入要搜索的场站名
-        # elem_loupe = browser.find_element_by_css_selector(
-        #     "span[class='ic_basic-input-search-icon']").click()  # 点击右侧的搜索放大镜，其实不用点放大镜也可以的
-        # sleep(140)
-        functions.wait_loading(browser)     # 等待加载
-        WebDriverWait(browser, timeout=20).until(ec.element_to_be_clickable((
-            By.CSS_SELECTOR, "span[class='ic_basic-input-search-icon']"))).click()  # 点击右侧的搜索放大镜，其实不用点放大镜也可以的
-        functions.wait_loading(browser)     # 等待加载
-        elem_configuration = browser.find_element_by_css_selector("a[href*='%s']" % siteID).click()  # 选到特定的配置按钮
-        functions.wait_loading(browser)     # 等待加载
+    browser.switch_to.window(browser.window_handles[0])  # 切换回Edge接入窗口
+    browser.get(REAL_EDGE_URL)     # 打开新的站点独有的DASHBOARD仪表盘--Edge接入
+    functions.wait_loading(browser)     # 等待转瞬即逝的mask-open变成mask-close
 
     box_list = []       # 用来判断盒子是否已经存在
     port_list = []      # 用来判断下一个104转发连接该用104转发几了？——有几个端口号就有几个连接——每往里面填入一个新元素，104转发x的x就要+1
@@ -210,7 +182,7 @@ for each_station in data:
             elem_box_name = browser.find_element_by_css_selector("input[id='addBoxName']").send_keys(BOX_NAME)  # 输入盒子名字
             elem_box_sn = browser.find_element_by_css_selector("input[id='addBoxSN']").send_keys(BOX_SN)  # 输入对应的SN号
             elem_box_submit = browser.find_element_by_xpath(
-                "// *[ @ id = 'container'] / div / div[1] / div[2] / "
+                "// *[ @ id = 'container'] / div / div[2] / div[2] / "
                 "div / div[2] / div[1] / div / div / div[3] / div / button[2]").click()  # 点击提交
 
             sleep(2)    # 提交之后阻塞2秒以等待
@@ -240,7 +212,7 @@ for each_station in data:
                     device_template = browser.find_element_by_css_selector(
                         "option[value='4169']").click()  # 统一先选 创力800/5的模板
                     device_submit = browser.find_element_by_xpath(
-                        "//*[@id='container']/div/div[1]/div[2]/div/div[3]/div/div[2]/a[2]").click()  # 点击保存
+                        "//*[@id='container']/div/div[2]/div[2]/div/div[3]/div/div[2]/a[2]").click()  # 点击保存
                     sleep(3)    # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
                     # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
         else:
@@ -267,7 +239,7 @@ for each_station in data:
                         device_template = browser.find_element_by_css_selector(
                             "option[value='4169']").click()  # 统一先选 创力800/5的模板
                         device_submit = browser.find_element_by_xpath(
-                            "//*[@id='container']/div/div[1]/div[2]/div/div[3]/div/div[2]/a[2]").click()  # 点击保存
+                            "//*[@id='container']/div/div[2]/div[2]/div/div[3]/div/div[2]/a[2]").click()  # 点击保存
                         sleep(3)  # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
                         # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
                     else:   # 若一致————在对应盒子下的对应TEMP_LINK连接下添加设备
@@ -293,7 +265,7 @@ for each_station in data:
                         device_template = browser.find_element_by_css_selector(
                             "option[value='4169']").click()  # 统一先选 创力800/5的模板
                         device_submit = browser.find_element_by_xpath(
-                            "//*[@id='container']/div/div[1]/div[2]/div/div[3]/div/div[2]/a[2]")
+                            "//*[@id='container']/div/div[2]/div[2]/div/div[3]/div/div[2]/a[2]")
                         device_submit.click()  # 点击保存
                         sleep(3)  # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
                         # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
