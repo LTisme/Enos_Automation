@@ -145,11 +145,13 @@ for each_station in data:
     TEMP_BOX = ""       # 暂存最新的盒子
     TEMP_LINK = ""      # 暂存最新的连接——有必要吗？
     TEMP_PORT_NUM = ""  # 暂存最新的端口号
-    count = 1
+    count = 1   # 判断是否是第一次接收TEMP_PORT_NUM
+    temp_link_count = 1     # 判断是否是第一次接收TEMP_LINK
     for each_device in each_station['信息']:  # 初步的打算是每做一个盒子就点击下面的连接添加设备
         """这个for循环用来往Edge接入里填信息"""
         PORT_NUM = each_device['port_num']  # 获得了端口号
         DEVICE_NAME = each_device['device_name']    # 获得了设备名
+        LOGIC_NUM = each_device['modbus']   # 获得了对应的公共地址
         if count == 1:
             TEMP_PORT_NUM = PORT_NUM    # 第一次直接把TEMP_PORT_NUM值赋为PORT_NUM值，然后到for循环最后再判断两者是否相等
             count = 0
@@ -199,6 +201,9 @@ for each_station in data:
                     # box.find_element_by_xpath("parent::*").click()     # 选中对应的盒子，不能直接box.click()
                     # 在新建的盒子下新建104转发x的连接，并在新建的连接中添加设备————也可以重构成函数————已重构
                     LINK_NAME = functions.which_link(PORT_NUM, port_list)
+                    if temp_link_count == 1:
+                        TEMP_LINK = LINK_NAME
+                        temp_link_count = 0
                     functions.establish_link(browser, LINK_NAME, IP, PORT_NUM)  # 建立新连接
                     sleep(1)
 
@@ -226,6 +231,9 @@ for each_station in data:
                     if TEMP_PORT_NUM != PORT_NUM:   # 若不一致————在对应盒子下新建104转发x的连接，并在新建的连接中添加设备
                         # 在新建的盒子下新建104转发x的连接，并在新建的连接中添加设备————也可以重构成函数————已重构
                         LINK_NAME = functions.which_link(PORT_NUM, port_list)   # 获得接下来该用的连接名称
+                        if temp_link_count == 1:
+                            TEMP_LINK = LINK_NAME
+                            temp_link_count = 0
                         functions.establish_link(browser, LINK_NAME, IP, PORT_NUM)  # 建立新连接
                         sleep(1)
 
@@ -244,6 +252,9 @@ for each_station in data:
                         # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
                     else:   # 若一致————在对应盒子下的对应TEMP_LINK连接下添加设备
                         LINK_NAME = functions.which_link(PORT_NUM, port_list)
+                        if temp_link_count == 1:
+                            TEMP_LINK = LINK_NAME
+                            temp_link_count = 0
                         # 开始在已有的连接下，选择添加设备按钮
                         link = functions.find_link(browser, LINK_NAME)
                         # 对应的连接是唯一的，所以可以只选中列表的第一个元素

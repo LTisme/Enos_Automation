@@ -139,3 +139,23 @@ def wait_loading(browser):
             print(str(f))
             break
 
+
+def revise_logicNum_AI_DI(browser, LINKNAME, DEVICE_NAME, times=0):
+    """修改-对应设备-的逻辑编号、AI、DI偏移量"""
+    tabpanel = browser.find_element_by_css_selector("div[class='tab-pane fade active in']")     # 找到对应盒子下的tabpanel
+    corresponding_link = tabpanel.find_element_by_xpath(
+        "//span[contains(text(),'%s')]" % LINKNAME)     # 找到<span>104转发x</span>
+    open_flag = corresponding_link.find_element_by_xpath("/parent::*")  # 找到corresponding_link的父节点
+    if open_flag.get_attribute('class') == 'collapse-layout-close':     # 若icon箭头是关闭的，则需要点击它来将其打开
+        open_flag.find_element_by_xpath("child::span[1]").click()
+
+    # TODO: 找到corresponding_link的父父父的后第二个兄弟的子子子子——也就是<table>下的<tbody>——暂名为Z
+
+    # TODO: Z有几个设备就会有几个<tr>,一个<tr>下面的<td>树木是固定的,故Z.find_elements_by_tag_name("tr")——暂命为“Z-tries”
+
+    # TODO: 从“Z-tries”中找到要找的设备名，然后偏移大概到第7个的following-sibling，去最后一个<td>下点击编辑按钮——这样才能打开3,4,5,6,7的<td>以供编辑
+
+    # TODO: 根据logicNum也就是times，来填入内容！！！！注意要组合热键
+
+    # TODO: 不要忘了填完后要再次点击确认按钮来保存刚修改的信息——元素已变化，变成了原按钮的父/父/following-sibling的第一个button儿子按钮了
+    #  ，函数运行完后要调用一下functions.wait_loading(browser)来等待mask消失
