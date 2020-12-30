@@ -140,22 +140,40 @@ def wait_loading(browser):
             break
 
 
-def revise_logicNum_AI_DI(browser, LINKNAME, DEVICE_NAME, times=0):
-    """修改-对应设备-的逻辑编号、AI、DI偏移量"""
-    tabpanel = browser.find_element_by_css_selector("div[class='tab-pane fade active in']")     # 找到对应盒子下的tabpanel
-    corresponding_link = tabpanel.find_element_by_xpath(
-        "//span[contains(text(),'%s')]" % LINKNAME)     # 找到<span>104转发x</span>
-    open_flag = corresponding_link.find_element_by_xpath("/parent::*")  # 找到corresponding_link的父节点
+def revise_logicNum_AI_DI(browser, LINKNAME, DEVICE_NAME, Keys, times=1):
+    """修改-对应设备-的逻辑编号、AI、DI偏移量——必须要用连接名来相对找到元素"""
+    AI = '%d-%d' % (78 * (times - 1), 78 * times - 1)
+    DI = '%d-%d' % (4 * times - 3, 4 * times)
+    link_in_active_box = browser.find_element_by_xpath(
+        "//*[@class='tab-pane fade active in']//span[contains(text(),'%s')]" % LINKNAME)     # 找到<span>104转发x</span>
+    open_flag = link_in_active_box.find_element_by_xpath("parent::*")  # 找到corresponding_link的父节点
     if open_flag.get_attribute('class') == 'collapse-layout-close':     # 若icon箭头是关闭的，则需要点击它来将其打开
-        open_flag.find_element_by_xpath("child::span[1]").click()
+        link_in_active_box.find_element_by_xpath("following-sibling::span[1]").click()
 
-    # TODO: 找到corresponding_link的父父父的后第二个兄弟的子子子子——也就是<table>下的<tbody>——暂名为Z
+    # 找到corresponding_link的父父父的后第二个兄弟的子子子子——也就是<table>下的<tbody>——暂名为Z
+    Z = link_in_active_box.find_element_by_xpath(
+        "parent::*/parent::*/following-sibling::div[2]/child::*/child::*/child::*/child::tbody")
 
-    # TODO: Z有几个设备就会有几个<tr>,一个<tr>下面的<td>树木是固定的,故Z.find_elements_by_tag_name("tr")——暂命为“Z-tries”
+    # Z有几个设备就会有几个<tr>,一个<tr>下面的<td>树木是固定的,故Z.find_elements_by_tag_name("tr")——暂命为“Z-tries”
+    Z_tries = Z.find_elements_by_tag_name("tr")
 
     # TODO: 从“Z-tries”中找到要找的设备名，然后偏移大概到第7个的following-sibling，去最后一个<td>下点击编辑按钮——这样才能打开3,4,5,6,7的<td>以供编辑
+    for Z_tr in Z_tries:
+        """填入都用Z_tr来偏移，因为tr是他下面所有td的父节点"""
+        if Z_tr.find_element_by_xpath("child::td[2]/child::div[1]").text == DEVICE_NAME:    # 定位到符合设备名称的tr元素
+            target_bar = Z_tr.find_element_by_xpath("child::td[2]/child::div[1]")
+            Z_tr.find_element_by_xpath("child::td[10]/div/div[1]/a[1]/span[1]").click()     # 找到编辑按钮，点击它开始编辑
 
-    # TODO: 根据logicNum也就是times，来填入内容！！！！注意要组合热键
+            # 根据logicNum也就是times，来填入内容！！！！注意要组合热键
+            Z_tr.find_element_by_xpath("child::td[4]/div/input").send_keys(Keys.CONTROL + 'a')    # 找到对应逻辑编号元素，使用全选
+            Z_tr.find_element_by_xpath("child::td[4]/div/input").send_keys(times)   # 输入逻辑编号
 
-    # TODO: 不要忘了填完后要再次点击确认按钮来保存刚修改的信息——元素已变化，变成了原按钮的父/父/following-sibling的第一个button儿子按钮了
-    #  ，函数运行完后要调用一下functions.wait_loading(browser)来等待mask消失
+            Z_tr.find_element_by_xpath("child::td[6]/div/input").send_keys(Keys.CONTROL + 'a')    # 找到对应AI元素，使用全选
+            Z_tr.find_element_by_xpath("child::td[6]/div/input").send_keys(AI)  # 输入AI偏移量
+
+            Z_tr.find_element_by_xpath("child::td[7]/div/input").send_keys(Keys.CONTROL + 'a')  # 找到对应DI元素，使用全选
+            Z_tr.find_element_by_xpath("child::td[7]/div/input").send_keys(DI)  # 输入DI偏移量
+
+            # 不要忘了填完后要再次点击确认按钮来保存刚修改的信息——元素已变化，变成了原按钮的父/父/following-sibling的第一个button儿子按钮了
+            #  ，函数运行完后要调用一下functions.wait_loading(browser)来等待mask消失
+            Z_tr.find_element_by_xpath("child::td[10]/div/div[2]/button[1]").click()    # 点击确定按钮

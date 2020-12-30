@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import functions    # 导入用到的功能函数
+from selenium.webdriver.common.keys import Keys
 
 # 这几个还是不能缺
 DASHBOARD_STATION_URL = 'https://portal-lywz1.eniot.io/configuration/addstation.html?locale=zh-CN&siteid='    # 场站信息仪表盘网址
@@ -196,8 +197,8 @@ for each_station in data:
                 except:
                     continue
                 if BOX_TEXT == BOX_NAME:    # 找到新建的对应的盒子，并选中该盒子
-                    sleep(3)
                     box.click()
+                    sleep(3)
                     # box.find_element_by_xpath("parent::*").click()     # 选中对应的盒子，不能直接box.click()
                     # 在新建的盒子下新建104转发x的连接，并在新建的连接中添加设备————也可以重构成函数————已重构
                     LINK_NAME = functions.which_link(PORT_NUM, port_list)
@@ -220,6 +221,21 @@ for each_station in data:
                         "//*[@id='container']/div/div[2]/div[2]/div/div[3]/div/div[2]/a[2]").click()  # 点击保存
                     sleep(3)    # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
                     # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
+                    boxes = browser.find_elements_by_css_selector("a[id*='tab']")   # 重新拾取页面盒子元素
+                    for re_box in boxes:
+                        try:  # 防止盒子取不到text属性而报错
+                            BOX_TEXT = re_box.text
+                        except:
+                            continue
+                        if BOX_TEXT == BOX_NAME:  # 找到新建的对应的盒子，并选中该盒子
+                            re_box.click()
+                            sleep(3)
+                            if LINK_NAME == TEMP_LINK:
+                                functions.revise_logicNum_AI_DI(browser, LINK_NAME, DEVICE_NAME, Keys, LOGIC_NUM)
+                            else:
+                                TEMP_LINK = LINK_NAME
+                                functions.revise_logicNum_AI_DI(browser, LINK_NAME, DEVICE_NAME, Keys, LOGIC_NUM)
+                            functions.wait_loading(browser)
         else:
             """盒子存在，则不用建盒子了"""
             boxes = browser.find_elements_by_css_selector("a[id*='tab']")
@@ -250,6 +266,21 @@ for each_station in data:
                             "//*[@id='container']/div/div[2]/div[2]/div/div[3]/div/div[2]/a[2]").click()  # 点击保存
                         sleep(3)  # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
                         # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
+                        boxes = browser.find_elements_by_css_selector("a[id*='tab']")  # 重新拾取页面盒子元素
+                        for re_box in boxes:
+                            try:  # 防止盒子取不到text属性而报错
+                                BOX_TEXT = re_box.text
+                            except:
+                                continue
+                            if BOX_TEXT == BOX_NAME:  # 找到新建的对应的盒子，并选中该盒子
+                                re_box.click()
+                                sleep(3)
+                                if LINK_NAME == TEMP_LINK:
+                                    functions.revise_logicNum_AI_DI(browser, LINK_NAME, DEVICE_NAME, Keys, LOGIC_NUM)
+                                else:
+                                    TEMP_LINK = LINK_NAME
+                                    functions.revise_logicNum_AI_DI(browser, LINK_NAME, DEVICE_NAME, Keys, LOGIC_NUM)
+                                functions.wait_loading(browser)
                     else:   # 若一致————在对应盒子下的对应TEMP_LINK连接下添加设备
                         LINK_NAME = functions.which_link(PORT_NUM, port_list)
                         if temp_link_count == 1:
@@ -280,6 +311,21 @@ for each_station in data:
                         device_submit.click()  # 点击保存
                         sleep(3)  # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
                         # TODO: ZAN SHI BU NONG——还是需要有变量存着刚才做的是哪个连接下的操作，以备后面点开去修改偏移量
+                        boxes = browser.find_elements_by_css_selector("a[id*='tab']")  # 重新拾取页面盒子元素
+                        for re_box in boxes:
+                            try:  # 防止盒子取不到text属性而报错
+                                BOX_TEXT = re_box.text
+                            except:
+                                continue
+                            if BOX_TEXT == BOX_NAME:  # 找到新建的对应的盒子，并选中该盒子
+                                re_box.click()
+                                sleep(3)
+                                if LINK_NAME == TEMP_LINK:
+                                    functions.revise_logicNum_AI_DI(browser, LINK_NAME, DEVICE_NAME, Keys, LOGIC_NUM)
+                                else:
+                                    TEMP_LINK = LINK_NAME
+                                    functions.revise_logicNum_AI_DI(browser, LINK_NAME, DEVICE_NAME, Keys, LOGIC_NUM)
+                                functions.wait_loading(browser)
 
         if TEMP_PORT_NUM != PORT_NUM:   # 在for循环最后再判断两者是否相等
             TEMP_PORT_NUM = PORT_NUM
