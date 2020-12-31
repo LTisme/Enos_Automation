@@ -1,6 +1,6 @@
 #! python3
 # 用来读入json的数据来自动填表
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import json
 import os
 from selenium import webdriver
