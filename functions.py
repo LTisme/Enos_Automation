@@ -183,23 +183,32 @@ def regex(re, target, manufacturer, CT, PT='1'):
     """各个不同厂家所用的正则判定"""
     if manufacturer == '南德电气' and PT != '1':
         REGEX = re.compile(r'^(.*)(%s)(.*)(%s)(.*)(%s)' % (manufacturer, PT, CT))      # 南德电气用的正则
+        print('1')
     elif manufacturer == '南德电气' and PT == '1':
-        REGEX = re.compile(r'^(.*)(%s)(.*)(%s)' % ('创力', CT))  # 南德电气无PT用的正则——与创力一样
-    elif manufacturer != '南德电气' and PT != '1':
-        REGEX = re.compile(r'^(.*)(%s)(.*)(%s)(.*)(PT%s)' % (manufacturer, CT, PT))
-        # 针对佳和带PT的，即除南德电气外有PT的肯定以PT变比结尾，且带PT二字
+        REGEX = re.compile(r'^(.*)(%s)(.*)(_%s)' % ('创力', CT))  # 南德电气无PT用的正则——与创力一样
+        print('2 ')
+    elif manufacturer == '创力' and PT == '1':    # 创力目前没有带PT的变比
+        REGEX = re.compile(r'^(.*)(%s)(.*)(_%s)' % (manufacturer, CT))  # 带下划线可以区分2500/5与500/5的模糊
+        print('3')
+    elif manufacturer == '佳和' and PT != '1':    # 佳和带PT的变比
+        REGEX = re.compile(r'^(.*)(%s)(.*)(_%s)(.*)(_PT%s)' % (manufacturer, CT, PT))
+        print('4')
+    elif manufacturer == '佳和' and PT == '1':    # 佳和不带PT的变比，最好带一个非贪心匹配，这样可以不带入水电后缀
+        REGEX = re.compile(r'^(.*)(%s)(.*)(_%s)' % (manufacturer, CT))
+        print('5')
     else:
-        REGEX = re.compile(r'^(.*)(%s)(.*)(%s)' % (manufacturer, CT))  # 佳和、创力无PT的都在这，肯定已CT变比结尾，但不带CT二字
+        print(f'匹配失败')
+        return False
+
     if REGEX.match(target):
         print(f'匹配成功')
         return True
     else:
-        print(f'匹配失败')
         return False
 
 
 if __name__ == '__main__':
     import re
-    model = '创力104转发YC78_1500/5 (v1.0)'
+    model = '南德电气20kv_PT100/1_CT500/5 (v1.0)'
     # 试验成功的话，所以后续只用把model不断的循环为option的文本值就行了
-    regex(re, model, '创力', '1500/5', '1')
+    regex(re, model, '南德电气', '500/5', '1')

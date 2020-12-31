@@ -154,7 +154,7 @@ for each_station in data:
         PORT_NUM = each_device['port_num']  # 获得了端口号
         DEVICE_NAME = each_device['device_name']    # 获得了设备名
         DEVICE_CT = each_device['CT']
-        DEVICE_PT = each_device['PT']
+        DEVICE_PT = str(each_device['PT'])  # 字符化PT
         DEVICE_MANUFACTURER = each_device['manufacturer']
         LOGIC_NUM = each_device['modbus']   # 获得了对应的公共地址
         if count == 1:
