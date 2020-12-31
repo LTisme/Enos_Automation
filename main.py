@@ -11,6 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 import functions    # 导入用到的功能函数
 from selenium.webdriver.common.keys import Keys
+import re   # 导入正则模块
 
 # 这几个还是不能缺
 DASHBOARD_STATION_URL = 'https://portal-lywz1.eniot.io/configuration/addstation.html?locale=zh-CN&siteid='    # 场站信息仪表盘网址
@@ -152,6 +153,9 @@ for each_station in data:
         """这个for循环用来往Edge接入里填信息"""
         PORT_NUM = each_device['port_num']  # 获得了端口号
         DEVICE_NAME = each_device['device_name']    # 获得了设备名
+        DEVICE_CT = each_device['CT']
+        DEVICE_PT = each_device['PT']
+        DEVICE_MANUFACTURER = each_device['manufacturer']
         LOGIC_NUM = each_device['modbus']   # 获得了对应的公共地址
         if count == 1:
             TEMP_PORT_NUM = PORT_NUM    # 第一次直接把TEMP_PORT_NUM值赋为PORT_NUM值，然后到for循环最后再判断两者是否相等
@@ -215,8 +219,19 @@ for each_station in data:
                     functions.add_unique_device_in_link(browser, DEVICE_NAME)     # 勾选中相应的设备
                     # 然后统一设定一个变比模板，后面再来修改
                     # 或者说，读取excel的时候就进行正则判定，它应该选哪一个变比模板
-                    device_template = browser.find_element_by_css_selector(
-                        "option[value='4169']").click()  # 统一先选 创力800/5的模板
+                    # device_template = browser.find_element_by_css_selector(
+                    #     "option[value='4169']").click()  # 统一先选 创力800/5的模板
+                    device_templates = browser.find_elements_by_xpath("//*[@id='device_type_select']/option")   # 找到所有的option
+                    found_flag = 0
+                    for each_template in device_templates:
+                        print(each_template.text)
+                        if functions.regex(re, each_template.text, DEVICE_MANUFACTURER, DEVICE_CT, DEVICE_PT):
+                            found_flag = 1  # 找到了对应的模板
+                            each_template.click()
+                    if found_flag == 0:
+                        """此处也可以用log日志记录"""
+                        device_template = browser.find_element_by_css_selector(
+                            "option[value='4169']").click()  # 若未找到，则统一先选：创力800/5的模板
                     device_submit = browser.find_element_by_xpath(
                         "//*[@id='container']/div/div[2]/div[2]/div/div[3]/div/div[2]/a[2]").click()  # 点击保存
                     sleep(3)    # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
@@ -260,8 +275,17 @@ for each_station in data:
                         functions.add_unique_device_in_link(browser, DEVICE_NAME)
                         # 然后统一设定一个变比模板，后面再来修改
                         # 或者说，读取excel的时候就进行正则判定，它应该选哪一个变比模板
-                        device_template = browser.find_element_by_css_selector(
-                            "option[value='4169']").click()  # 统一先选 创力800/5的模板
+                        device_templates = browser.find_elements_by_xpath(
+                            "//*[@id='device_type_select']/option")  # 找到所有的option
+                        found_flag = 0
+                        for each_template in device_templates:
+                            if functions.regex(re, each_template.text, DEVICE_MANUFACTURER, DEVICE_CT, DEVICE_PT):
+                                found_flag = 1  # 找到对应模板
+                                each_template.click()
+                        if found_flag == 0:
+                            """此处也可以用log日志记录"""
+                            device_template = browser.find_element_by_css_selector(
+                                "option[value='4169']").click()  # 若未找到，则统一先选：创力800/5的模板
                         device_submit = browser.find_element_by_xpath(
                             "//*[@id='container']/div/div[2]/div[2]/div/div[3]/div/div[2]/a[2]").click()  # 点击保存
                         sleep(3)  # 阻塞3秒以防万一，因为页面回去的时候可能会加载一小会儿
@@ -304,8 +328,17 @@ for each_station in data:
                         functions.add_unique_device_in_link(browser, DEVICE_NAME)
                         # 然后统一设定一个变比模板，后面再来修改
                         # 或者说，读取excel的时候就进行正则判定，它应该选哪一个变比模板
-                        device_template = browser.find_element_by_css_selector(
-                            "option[value='4169']").click()  # 统一先选 创力800/5的模板
+                        device_templates = browser.find_elements_by_xpath(
+                            "//*[@id='device_type_select']/option")  # 找到所有的option
+                        found_flag = 0
+                        for each_template in device_templates:
+                            if functions.regex(re, each_template.text, DEVICE_MANUFACTURER, DEVICE_CT, DEVICE_PT):
+                                found_flag = 1  # 找到对应模板
+                                each_template.click()
+                        if found_flag == 0:
+                            """此处也可以用log日志记录"""
+                            device_template = browser.find_element_by_css_selector(
+                                "option[value='4169']").click()  # 若未找到，则统一先选：创力800/5的模板
                         device_submit = browser.find_element_by_xpath(
                             "//*[@id='container']/div/div[2]/div[2]/div/div[3]/div/div[2]/a[2]")
                         device_submit.click()  # 点击保存

@@ -177,3 +177,29 @@ def revise_logicNum_AI_DI(browser, LINKNAME, DEVICE_NAME, Keys, times=1):
             # 不要忘了填完后要再次点击确认按钮来保存刚修改的信息——元素已变化，变成了原按钮的父/父/following-sibling的第一个button儿子按钮了
             #  ，函数运行完后要调用一下functions.wait_loading(browser)来等待mask消失
             Z_tr.find_element_by_xpath("child::td[10]/div/div[2]/button[1]").click()    # 点击确定按钮
+
+
+def regex(re, target, manufacturer, CT, PT='1'):
+    """各个不同厂家所用的正则判定"""
+    if manufacturer == '南德电气' and PT != '1':
+        REGEX = re.compile(r'^(.*)(%s)(.*)(%s)(.*)(%s)' % (manufacturer, PT, CT))      # 南德电气用的正则
+    elif manufacturer == '南德电气' and PT == '1':
+        REGEX = re.compile(r'^(.*)(%s)(.*)(%s)' % ('创力', CT))  # 南德电气无PT用的正则——与创力一样
+    elif manufacturer != '南德电气' and PT != '1':
+        REGEX = re.compile(r'^(.*)(%s)(.*)(%s)(.*)(PT%s)' % (manufacturer, CT, PT))
+        # 针对佳和带PT的，即除南德电气外有PT的肯定以PT变比结尾，且带PT二字
+    else:
+        REGEX = re.compile(r'^(.*)(%s)(.*)(%s)' % (manufacturer, CT))  # 佳和、创力无PT的都在这，肯定已CT变比结尾，但不带CT二字
+    if REGEX.match(target):
+        print(f'匹配成功')
+        return True
+    else:
+        print(f'匹配失败')
+        return False
+
+
+if __name__ == '__main__':
+    import re
+    model = '创力104转发YC78_1500/5 (v1.0)'
+    # 试验成功的话，所以后续只用把model不断的循环为option的文本值就行了
+    regex(re, model, '创力', '1500/5', '1')
