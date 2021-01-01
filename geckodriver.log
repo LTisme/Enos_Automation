@@ -2383,3 +2383,15 @@ JavaScript error: resource://gre/modules/psm/RemoteSecuritySettings.jsm, line 81
 
 ###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
 
+1609401690800	geckodriver	INFO	Listening on 127.0.0.1:59067
+1609401693830	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Firefox Developer Edition\\firefox.exe" "--marionette" "-foreground" "-no-remote" "-profile" "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\rust_mozprofileYfMmPS"
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new Error("", "(unknown module)"))
+1609401695986	Marionette	INFO	Listening on port 59076
+1609401696508	Marionette	WARN	TLS certificate errors will be ignored for this session
+1609401696535	Marionette	ERROR	[17] No reply from Marionette:Register
+1609401707982	Marionette	ERROR	[2147483651] No reply from Marionette:Register
+[GFX1-]: Updating unknown shared surface: 12884901916
+IPDL protocol error: Handler returned error code!
+
+###!!! [Parent][DispatchAsyncMessage] Error: PWebRenderBridge::Msg_UpdateResources Processing error: message was deserialized, but the handler returned false (indicating failure)
+
